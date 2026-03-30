@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Lens Cost Calculator</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+      color: white;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    header span { font-size: 0.85rem; opacity: 0.8; }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a365d;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ebf4ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Upload Section ── */
+    .upload-area {
+      border: 2px dashed #bee3f8;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      background: #ebf8ff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-area:hover { border-color: #2b6cb0; background: #dbeafe; }
+    .upload-area input { display: none; }
+    .upload-area .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .upload-area p { color: #4a5568; margin-bottom: 6px; }
+    .upload-area small { color: #718096; }
+    .upload-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 20px;
+      background: #2b6cb0;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .upload-btn:hover { background: #1a365d; }
+    .upload-status {
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .upload-status.success { background: #c6f6d5; color: #276749; display: block; }
+    .upload-status.error   { background: #fed7d7; color: #9b2335; display: block; }
+
+    /* ── Form Grid ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.8rem; font-weight: 600; color: #4a5568; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    select, input[type="number"], input[type="text"] {
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #2d3748;
+      background: #f7fafc;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #2b6cb0;
+      box-shadow: 0 0 0 3px rgba(43,108,176,0.15);
+      background: white;
+    }
+    select:disabled, input:disabled {
+      background: #edf2f7;
+      color: #a0aec0;
+      cursor: not-allowed;
+    }
+
+    /* ── Eye Sections ── */
+    .eyes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 700px) { .eyes-grid { grid-template-columns: 1fr; } }
+
+    .eye-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 18px;
+      background: #f7fafc;
+    }
+    .eye-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .eye-card.left h3  { color: #2b6cb0; }
+    .eye-card.right h3 { color: #2b6cb0; }
+
+    .same-lens-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: #ebf8ff;
+      border-radius: 8px;
+      border: 1px solid #bee3f8;
+    }
+    .same-lens-row input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer; accent-color: #2b6cb0;
+    }
+    .same-lens-row label {
+      font-size: 0.88rem;
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+      color: #2b6cb0;
+      font-weight: 600;
+    }
+
+    /* ── Supply Selection ── */
+    .supply-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    @media (max-width: 600px) { .supply-options { grid-template-columns: repeat(2,1fr); } }
+
+    .supply-option {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      background: white;
+    }
+    .supply-option:hover { border-color: #2b6cb0; }
+    .supply-option.selected {
+      border-color: #2b6cb0;
+      background: #ebf8ff;
+      box-shadow: 0 0 0 3px rgba(43,108,176,0.12);
+    }
+    .supply-option input[type="radio"] { display: none; }
+    .supply-option .months { font-size: 1rem; font-weight: 700; color: #1a365d; }
+    .supply-option .boxes  { font-size: 0.75rem; color: #718096; margin-top: 2px; }
+    .supply-option .price  { font-size: 0.85rem; color: #2b6cb0; font-weight: 600; margin-top: 4px; }
+
+    /* ── Patient Type Toggle ── */
+    .toggle-group {
+      display: flex;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .toggle-group label {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+      color: #4a5568;
+      background: white;
+      transition: all 0.2s;
+      border: none;
+    }
+    .toggle-group input[type="radio"] { display: none; }
+    .toggle-group input[type="radio"]:checked + label {
+      background: #2b6cb0;
+      color: white;
+    }
+
+    /* ── Calculate Button ── */
+    .calc-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a365d, #2b6cb0);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.03em;
+      margin-top: 8px;
+    }
+    .calc-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .calc-btn:active { transform: translateY(0); }
+
+    /* ── Results ── */
+    #results { display: none; }
+
+    .results-header {
+      background: linear-gradient(135deg, #1a365d, #2b6cb0);
+      color: white;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .results-header h2 { color: white; border: none; margin: 0; padding: 0; font-size: 1.1rem; }
+    .results-header .lens-name { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+    .results-header .supply-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .result-tile {
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+    }
+    .result-tile .tile-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .result-tile .tile-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .result-tile .tile-sub {
+      font-size: 0.78rem;
+      margin-top: 6px;
+      opacity: 0.8;
+    }
+
+    .tile-primary   { background: #ebf8ff; border: 2px solid #bee3f8; }
+    .tile-primary .tile-label { color: #2c7a7b; }
+    .tile-primary .tile-value { color: #1a365d; }
+
+    .tile-due       { background: #fff5f5; border: 2px solid #fed7d7; }
+    .tile-due .tile-label { color: #c53030; }
+    .tile-due .tile-value { color: #c53030; }
+
+    .tile-rebate    { background: #f0fff4; border: 2px solid #c6f6d5; }
+    .tile-rebate .tile-label { color: #276749; }
+    .tile-rebate .tile-value { color: #276749; }
+
+    .tile-perbox    { background: #fefcbf; border: 2px solid #faf089; }
+    .tile-perbox .tile-label { color: #744210; }
+    .tile-perbox .tile-value { color: #744210; }
+
+    .tile-savings   { background: #faf5ff; border: 2px solid #e9d8fd; }
+    .tile-savings .tile-label { color: #553c9a; }
+    .tile-savings .tile-value { color: #553c9a; }
+
+    /* ── Breakdown Table ── */
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .breakdown-table th {
+      background: #edf2f7;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4a5568;
+    }
+    .breakdown-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .breakdown-table tr:last-child td { border-bottom: none; }
+    .breakdown-table .positive { color: #276749; font-weight: 700; }
+    .breakdown-table .negative { color: #c53030; font-weight: 700; }
+    .breakdown-table .total-row td {
+      font-weight: 800;
+      background: #f7fafc;
+      font-size: 1rem;
+    }
+
+    /* ── Competitor Comparison ── */
+    .competitor-bar {
+      background: #faf5ff;
+      border: 1.5px solid #e9d8fd;
+      border-radius: 10px;
+      padding: 18px 24px;
+    }
+    .competitor-bar h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #553c9a;
+      margin-bottom: 14px;
+    }
+    .comp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .comp-label { font-size: 0.88rem; color: #4a5568; }
+    .comp-value { font-size: 1rem; font-weight: 700; }
+    .comp-value.us   { color: #1a365d; }
+    .comp-value.them { color: #c53030; }
+    .comp-value.save { color: #276749; }
+
+    .talking-points {
+      margin-top: 14px;
+      background: white;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .talking-points h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #553c9a;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+    .talking-points ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .talking-points li {
+      font-size: 0.88rem;
+      padding-left: 22px;
+      position: relative;
+      color: #4a5568;
+      line-height: 1.4;
+    }
+    .talking-points li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #276749;
+      font-weight: 800;
+    }
+
+    /* ── Reset Button ── */
+    .reset-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 10px 30px;
+      background: transparent;
+      border: 2px solid #2b6cb0;
+      color: #2b6cb0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+    .reset-btn:hover { background: #2b6cb0; color: white; }
+
+    /* ── Info Pills ── */
+    .info-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pill-blue   { background: #bee3f8; color: #1a365d; }
+    .pill-green  { background: #c6f6d5; color: #276749; }
+    .pill-orange { background: #feebc8; color: #7b341e; }
+
+    /* ── No Data State ── */
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #a0aec0;
+    }
+    .no-data .icon { font-size: 3rem; margin-bottom: 10px; }
+    .no-data p { font-size: 0.95rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 6px; text-align: center; }
+      .eyes-grid { grid-template-columns: 1fr; }
+      .supply-options { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>👁️ Contact Lens Cost Calculator</h1>
+  <span id="dataStatus">⚠️ No lens data loaded — please upload a CSV</span>
+</header>
+
+<div class="container">
+
+  <!-- ── Step 1: Upload CSV ── -->
+  <div class="card">
+    <h2>📂 Step 1: Load Lens Data (CSV)</h2>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('csvFile').click()">
+      <input type="file" id="csvFile" accept=".csv" onchange="handleCSVUpload(event)"/>
+      <div class="upload-icon">📄</div>
+      <p><strong>Click to upload your lens CSV file</strong></p>
+      <small>Supports .csv files — upload a new file anytime to update pricing</small>
+      <div class="upload-btn">Choose CSV File</div>
+    </div>
+    <div class="upload-status" id="uploadStatus"></div>
+
+    <!-- CSV Format Guide -->
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer; font-size:0.88rem; color:#2b6cb0; font-weight:600;">
+        📋 View required CSV column format
+      </summary>
+      <div style="margin-top:12px; overflow-x:auto;">
+        <table style="font-size:0.78rem; border-collapse:collapse; width:100%;">
+          <thead>
+            <tr style="background:#edf2f7;">
+              <th style="padding:6px 10px; border:1px solid #e2e8f0;">Column Name</th>
+              <th style="padding:6px 10px; border:1px solid #e2e8f0;">Description</th>
+              <th style="padding:6px 10px; border:1px solid #e2e8f0;">Example</th>
+            </tr>
+          </thead>
+          <tbody id="columnGuide"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;">
+        <button onclick="downloadSampleCSV()"
+          style="padding:7px 16px; background:#2b6cb0; color:white; border:none; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+          ⬇️ Download Sample CSV
+        </button>
+      </div>
+    </details>
+  </div>
+
+  <!-- ── Step 2: Calculator ── -->
+  <div class="card" id="calculatorCard">
+    <h2>🔢 Step 2: Calculate Contact Lens Cost</h2>
+
+    <div id="noDataMsg" class="no-data">
+      <div class="icon">📊</div>
+      <p>Upload your CSV file above to begin calculating</p>
+    </div>
+
+    <div id="calculatorForm" style="display:none;">
+
+      <!-- Patient Type -->
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:8px; font-size:0.8rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:0.05em;">
+          Patient Type
+        </label>
+        <div class="toggle-group" style="max-width:320px;">
+          <input type="radio" name="patientType" id="ptNew" value="new" checked onchange="updateRebateDisplay()"/>
+          <label for="ptNew">🆕 New Patient</label>
+          <input type="radio" name="patientType" id="ptExisting" value="existing" onchange="updateRebateDisplay()"/>
+          <label for="ptExisting">👤 Existing Patient</label>
+        </div>
+      </div>
+
+      <!-- RIGHT Eye -->
+      <div class="eyes-grid" style="margin-bottom:20px;">
+        <div class="eye-card right">
+          <h3>👁️ Right Eye (OD)</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Brand</label>
+              <select id="brandOD" onchange="onBrandChange('OD')">
+                <option value="">— Select Brand —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Lens Name</label>
+              <select id="lensOD" onchange="onLensChange('OD')" disabled>
+                <option value="">— Select Lens —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Base Curve (BC)</label>
+              <select id="bcOD" onchange="onFilterChange('OD')" disabled>
+                <option value="">— BC —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Diameter (Diam)</label>
+              <select id="diamOD" onchange="onFilterChange('OD')" disabled>
+                <option value="">— Diam —</option>
+              </select>
+            </div>
+          </div>
+          <div id="lensInfoOD" style="margin-top:12px; display:none;">
+            <!-- Info pills populated dynamically -->
+          </div>
+        </div>
+
+        <!-- LEFT Eye -->
+        <div class="eye-card left">
+          <h3>👁️ Left Eye (OS)</h3>
+          <div class="same-lens-row">
+            <input type="checkbox" id="sameLens" onchange="toggleSameLens()"/>
+            <label for="sameLens">Same lens as Right Eye (OD)</label>
+          </div>
+          <div id="leftEyeFields">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Brand</label>
+                <select id="brandOS" onchange="onBrandChange('OS')">
+                  <option value="">— Select Brand —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Lens Name</label>
+                <select id="lensOS" onchange="onLensChange('OS')" disabled>
+                  <option value="">— Select Lens —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Base Curve (BC)</label>
+                <select id="bcOS" onchange="onFilterChange('OS')" disabled>
+                  <option value="">— BC —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Diameter (Diam)</label>
+                <select id="diamOS" onchange="onFilterChange('OS')" disabled>
+                  <option value="">— Diam —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="lensInfoOS" style="margin-top:12px; display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Supply Duration -->
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:10px; font-size:0.8rem; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:0.05em;">
+          Supply Duration
+        </label>
+        <div class="supply-options" id="supplyOptions">
+          <!-- populated dynamically -->
+          <div style="color:#a0aec0; font-size:0.88rem; grid-column:1/-1;">
+            Select a lens above to see supply options
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance -->
+      <div class="form-grid" style="margin-bottom:20px;">
+        <div class="form-group">
+          <label>Insurance Coverage ($)</label>
+          <input type="number" id="insurance" placeholder="0.00" min="0" step="0.01"
+                 oninput="onInsuranceChange()" />
+        </div>
+        <div class="form-group">
+          <label>Insurance applies to</label>
+          <select id="insuranceEye">
+            <option value="both">Both Eyes Combined</option>
+            <option value="OD">Right Eye (OD) Only</option>
+            <option value="OS">Left Eye (OS) Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Calculate -->
+      <button class="calc-btn" onclick="calculate()">
+        🧮 Calculate Cost
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Results ── -->
+  <div id="results">
+
+    <div class="results-header">
+      <h2>📊 Cost Summary</h2>
+      <div class="lens-name" id="resLensName">—</div>
+      <div>
+        <span class="supply-tag" id="resSupplyTag">—</span>
+        <span class="supply-tag" id="resPatientTag" style="margin-left:6px;">—</span>
+      </div>
+    </div>
+
+    <!-- Key Numbers -->
+    <div class="results-grid">
+      <div class="result-tile tile-due">
+        <div class="tile-label">💳 Amount Due Today</div>
+        <div class="tile-value" id="resDueToday">$0.00</div>
+        <div class="tile-sub">After insurance applied</div>
+      </div>
+      <div class="result-tile tile-primary">
+        <div class="tile-label">📦 Total After Insurance + Rebate</div>
+        <div class="tile-value" id="resTotalFinal">$0.00</div>
+        <div class="tile-sub">Patient's true net cost</div>
+      </div>
+      <div class="result-tile tile-rebate">
+        <div class="tile-label">🎁 Rebate (from Vendor)</div>
+        <div class="tile-value" id="resRebate">$0.00</div>
+        <div class="tile-sub" id="resRebateSub">Mailed/applied by manufacturer</div>
+      </div>
+      <div class="result-tile tile-perbox">
+        <div class="tile-label">📦 Price Per Box</div>
+        <div class="tile-value" id="resPricePerBox">$0.00</div>
+        <div class="tile-sub">Your office price</div>
+      </div>
+    </div>
+
+    <!-- Detailed Breakdown -->
+    <div class="card">
+      <h2>🔍 Detailed Breakdown</h2>
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>OD (Right)</th>
+            <th>OS (Left)</th>
+            <th>Combined</th>
+          </tr>
+        </thead>
+        <tbody id="breakdownBody">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Competitor Comparison -->
+    <div class="card">
+      <h2>🏆 Competitive Advantage</h2>
+      <div class="competitor-bar">
+        <h3>Your Price vs. Online Competitor (1-800 Contacts)</h3>
+        <div class="comp-row">
+          <span class="comp-label">Your Office Total (after ins. + rebate)</span
