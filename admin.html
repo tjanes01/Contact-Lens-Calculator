@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Lens Data Manager</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a365d, #2b6cb0);
+      color: white;
+      padding: 20px 30px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; }
+    header p  { font-size: 0.85rem; opacity: 0.8; margin-top: 4px; }
+
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a365d;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ebf4ff;
+    }
+
+    /* Login */
+    #loginSection { text-align: center; max-width: 400px; margin: 60px auto; }
+    #loginSection h2 { font-size: 1.4rem; color: #1a365d; margin-bottom: 8px; }
+    #loginSection p  { color: #718096; margin-bottom: 24px; font-size: 0.9rem; }
+
+    .login-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+    .login-input:focus {
+      outline: none;
+      border-color: #2b6cb0;
+      box-shadow: 0 0 0 3px rgba(43,108,176,0.15);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #1a365d, #2b6cb0);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .login-error {
+      color: #c53030;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* Admin Panel */
+    #adminPanel { display: none; }
+
+    .step-badge {
+      display: inline-block;
+      background: #2b6cb0;
+      color: white;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-right: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 400px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      padding: 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f7fafc;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #2b6cb0;
+      box-shadow: 0 0 0 3px rgba(43,108,176,0.15);
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-right: 8px;
+      margin-top: 10px;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary { background: #2b6cb0; color: white; }
+    .btn-success { background: #276749; color: white; }
+    .btn-warning { background: #d69e2e; color: white; }
+    .btn-danger  { background: #c53030; color: white; }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-top: 12px;
+      display: none;
+    }
+    .alert-success { background: #c6f6d5; color: #276749; border: 1px solid #9ae6b4; }
+    .alert-error   { background: #fed7d7; color: #c53030; border: 1px solid #fc8181; }
+    .alert-info    { background: #bee3f8; color: #1a365d; border: 1px solid #90cdf4; }
+
+    .instructions {
+      background: #fffaf0;
+      border: 1px solid #fbd38d;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: #744210;
+    }
+    .instructions strong { color: #1a365d; }
+
+    .lens-count {
+      display: inline-block;
+      background: #c6f6d5;
+      color: #276749;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-left: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 12px;
+    }
+    th {
+      background: #edf2f7;
+      padding: 8px 10px;
+      text-align: left;
+      color: #4a5568;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #edf2f7;
+      color: #2d3748;
+    }
+    tr:hover td { background: #f7fafc; }
+
+    .logout-btn {
+      float: right;
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">
+    🔒 Logout
+  </button>
+  <h1>🔐 Lens Data Admin Panel</h1>
+  <p>Authorized personnel only — pricing management</p>
+</header>
+
+<div class="container">
+
+  <!-- Login -->
+  <div id="loginSection" class="card">
+    <h2>🔐 Admin Login</h2>
+    <p>Enter your admin password to access the lens pricing manager</p>
+    <input type="password" class="login-input" id="passwordInput"
+           placeholder="Enter password"
+           onkeypress="if(event.key==='Enter') checkPassword()"/>
+    <button class="login-btn" onclick="checkPassword()">Login →</button>
+    <div class="login-error" id="loginError">
+      ❌ Incorrect password. Please try again.
+    </div>
+  </div>
+
+  <!-- Admin Panel (hidden until login) -->
+  <div id="adminPanel">
+
+    <!-- Current Lens Summary -->
+    <div class="card">
+      <h2>
+        📊 Current Lens Inventory
+        <span class="lens-count" id="lensCount">0 lenses</span>
+      </h2>
+      <div id="lensTable"></div>
+    </div>
+
+    <!-- How To Update -->
+    <div class="card">
+      <h2><span class="step-badge">1</span> How To Update Lens Pricing</h2>
+      <div class="instructions">
+        <strong>When prices change (1-2 times per year), here is what to do:</strong><br/><br/>
+        1. Open your <strong>data.js</strong> file in Notepad on your computer<br/>
+        2. Find the lens you want to update<br/>
+        3. Change the number next to the price field<br/>
+        4. Update the <strong>LAST_UPDATED</strong> date at the top<br/>
+        5. Save the file<br/>
+        6. Come to this admin page and use the uploader below<br/>
+        7. Or go to GitHub directly and re-upload the data.js file<br/><br/>
+        <strong>To add a new lens:</strong> Copy one of the existing lens blocks
+        in data.js, paste it at the bottom of the LENS_DATA list,
+        and fill in the new details. Make sure to add a comma after
+        the previous last lens block.
+      </div>
+    </div>
+
+    <!-- Quick Edit -->
+    <div class="card">
+      <h2><span class="step-badge">2</span> Quick Lens Data Editor</h2>
+      <p style="font-size:0.88rem; color:#718096; margin-bottom:14px;">
+        You can edit the lens data directly below. When done click
+        "Validate &amp; Download" to save a new data.js file,
+        then upload it to GitHub.
+      </p>
+      <textarea id="dataEditor" spellcheck="false"></textarea>
+      <div>
+        <button class="btn btn-primary" onclick="validateData()">
+          ✅ Validate Data
+        </button>
+        <button class="btn btn-success" onclick="downloadNewDataJS()">
+          ⬇️ Download Updated data.js
+        </button>
+        <button class="btn btn-warning" onclick="loadCurrentData()">
+          🔄 Reset To Current
+        </button>
+      </div>
+      <div class="alert alert-success" id="validateSuccess"></div>
+      <div class="alert alert-error"   id="validateError"></div>
+      <div class="alert alert-info"    id="validateInfo"></div>
+    </div>
+
+    <!-- Upload Instructions -->
+    <div class="card">
+      <h2><span class="step-badge">3</span> After Downloading — Upload To GitHub</h2>
+      <div class="instructions">
+        <strong>After you download the updated data.js file:</strong><br/><br/>
+        1. Go to <strong>github.com</strong> and log in<br/>
+        2. Open your <strong>contact-lens-calculator</strong> repository<br/>
+        3. Click <strong>Add file → Upload files</strong><br/>
+        4. Upload the new <strong>data.js</strong> file<br/>
+        5. In the commit message box type: <em>Update lens pricing</em><br/>
+        6. Click <strong>Commit changes</strong><br/>
